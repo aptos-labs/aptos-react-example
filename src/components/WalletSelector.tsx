@@ -1,15 +1,14 @@
 "use client";
 
 import {
-  APTOS_CONNECT_ACCOUNT_URL,
   AboutAptosConnect,
   AboutAptosConnectEducationScreen,
-  AnyAptosWallet,
   AptosPrivacyPolicy,
+  type AdapterNotDetectedWallet,
+  type AdapterWallet,
   WalletItem,
   WalletSortingOptions,
   groupAndSortWallets,
-  isAptosConnectWallet,
   isInstallRequired,
   truncateAddress,
   useWallet,
@@ -20,7 +19,6 @@ import {
   ChevronDown,
   Copy,
   LogOut,
-  User,
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { Button } from "./ui/button";
@@ -44,45 +42,36 @@ import {
 } from "./ui/dropdown-menu";
 import { toast } from "sonner";
 
-export function WalletSelector(walletSortingOptions: WalletSortingOptions) {
-  const { account, connected, disconnect, wallet } = useWallet();
+export function WalletSelector(
+  walletSortingOptions: WalletSortingOptions = {},
+) {
+  const { account, connected, disconnect } = useWallet();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const address = account?.address.toString();
 
   const closeDialog = useCallback(() => setIsDialogOpen(false), []);
 
   const copyAddress = useCallback(async () => {
-    if (!account?.address) return;
+    if (!address) return;
     try {
-      await navigator.clipboard.writeText(account.address);
+      await navigator.clipboard.writeText(address);
       toast.success("Copied wallet address to clipboard.");
     } catch {
       toast.error("Failed to copy wallet address.");
     }
-  }, [account?.address]);
+  }, [address]);
 
   return connected ? (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button>
-          {account?.ansName || truncateAddress(account?.address) || "Unknown"}
+          {account?.ansName || truncateAddress(address) || "Unknown"}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onSelect={copyAddress} className="gap-2">
           <Copy className="h-4 w-4" /> Copy address
         </DropdownMenuItem>
-        {wallet && isAptosConnectWallet(wallet) && (
-          <DropdownMenuItem asChild>
-            <a
-              href={APTOS_CONNECT_ACCOUNT_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex gap-2"
-            >
-              <User className="h-4 w-4" /> Account
-            </a>
-          </DropdownMenuItem>
-        )}
         <DropdownMenuItem onSelect={disconnect} className="gap-2">
           <LogOut className="h-4 w-4" /> Disconnect
         </DropdownMenuItem>
@@ -189,7 +178,7 @@ function ConnectWalletDialog({
 }
 
 interface WalletRowProps {
-  wallet: AnyAptosWallet;
+  wallet: AdapterWallet | AdapterNotDetectedWallet;
   onConnect?: () => void;
 }
 
