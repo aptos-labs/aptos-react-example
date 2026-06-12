@@ -22,6 +22,7 @@ function App() {
   const { account } = useWallet();
 
   const network = useNetwork();
+  const address = account?.address.toString();
 
   const { data: balance } = useAptBalance();
 
@@ -65,12 +66,14 @@ function App() {
             <CardDescription>
               <span
                 onClick={() => {
-                  navigator.clipboard.writeText(account.address);
+                  if (address) {
+                    navigator.clipboard.writeText(address);
+                  }
                   toast.success("Copied to clipboard!");
                 }}
                 className="flex items-center gap-2 cursor-pointer"
               >
-                {truncateAddress(account.address)} <Copy size={12} />
+                {truncateAddress(address)} <Copy size={12} />
               </span>
             </CardDescription>
           </CardHeader>
@@ -83,7 +86,7 @@ function App() {
             </div>
             <div className="flex justify-between gap-2">
               <span className="text-secondary-foreground">Network</span>{" "}
-              <span className="font-bold capitalize">{network.name}</span>
+              <span className="font-bold capitalize">{network.network}</span>
             </div>
             <div>
               <p>Send Coins</p>
